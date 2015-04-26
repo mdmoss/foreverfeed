@@ -12,6 +12,12 @@ def article_to_item(article):
     title.text = article.h1.text.strip()
     enclosure = ET.SubElement(item, 'enclosure')
     enclosure.set('url', article.select(".dl_track")[0]['href'].strip())
+    enclosure.set('type', 'audio/mpeg')
+    url = requests.head(article.select(".dl_track")[0]['href'].strip()).headers['location']
+    url2 = requests.head(url).headers['location']
+    enclosure.set('length', requests.head(url2).headers['content-length'])
+    guid = ET.SubElement(item, 'guid')
+    guid.text = "99pi:" + article.h1.text.strip()
     return item
 
 
@@ -37,7 +43,6 @@ while (True):
         time.sleep(2)
         i += 1
     except requests.exceptions.ConnectionError:
-        print("Connection error, retrying...")
         time.sleep(4)
 
 ET.dump(feed)
